@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 
-@Entity(name = "logindb")
-public class User {
+@Entity
+@Table(name = "logindb")
+public class DAOUser {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -32,4 +34,3 @@ public class User {
     }
 
 }
-

@@ -1,11 +1,13 @@
 package org.example.controller;
 
-import io.swagger.annotations.Api;
 import org.example.config.JwtTokenUtil;
+import org.example.dto.Redisdata;
 import org.example.model.JwtRequest;
 import org.example.model.JwtResponse;
 import org.example.model.UserDTO;
+import org.example.service.DefaultUserService;
 import org.example.service.JwtUserDetailsService;
+import org.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,13 +16,10 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
-@CrossOrigin
-@RequestMapping("/api")
-@Api(value = "SpringBootAuthentication",description = "It has API's for Authentication")
+@RestController
+@CrossOrigin(origins = "*")
 public class JwtAuthenticationController {
 
     @Autowired
@@ -32,9 +31,15 @@ public class JwtAuthenticationController {
     @Autowired
     private JwtUserDetailsService userDetailsService;
 
+    @Autowired
+    private UserService userService;
+
 
     @Autowired
     private PasswordEncoder bcryptEncoder;
+
+    @Autowired
+    private DefaultUserService defaultUserService;
 
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
@@ -47,13 +52,23 @@ public class JwtAuthenticationController {
 
         final String token = jwtTokenUtil.generateToken(userDetails);
 
+        String newtoken=token.substring(0,8);
+
+        System.out.println("token :"+token);
+        System.out.println("newtoken :"+newtoken);
+
+        Redisdata redisdata = new Redisdata(userDetails.getUsername(),token);
+
+        defaultUserService.saveToRedis(redisdata);
+
+
         return ResponseEntity.ok(new JwtResponse(token));
     }
+
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public ResponseEntity<?> saveUser(@RequestBody UserDTO user) throws Exception {
         return ResponseEntity.ok(userDetailsService.save(user));
     }
-
 
     private void authenticate(String username, String password) throws Exception {
         System.out.println(username+" : "+password);

@@ -70,9 +70,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
-    @Override
-    public void configure(WebSecurity web) throws Exception
-    {
-        web.ignoring().antMatchers("/resources/**", "/authenticate/**");
-    }
+//    @Override
+//    public void configure(WebSecurity web) throws Exception
+//    {
+//        web.ignoring().antMatchers("/resources/**", "/authenticate/**");
+//    }
 }

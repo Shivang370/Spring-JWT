@@ -1,7 +1,5 @@
 package org.example.service;
 
-import java.util.ArrayList;
-
 import org.example.model.DAOUser;
 import org.example.model.UserDTO;
 import org.example.repository.userDao;
@@ -12,6 +10,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
@@ -26,7 +26,6 @@ public class JwtUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         DAOUser user = userDao.findByUsername(username);
-//        System.out.println(user.getUsername() + ":" + user.getPassword());
 
         if (user != null) {
             return new User(user.getUsername(), user.getPassword(),
@@ -41,6 +40,8 @@ public class JwtUserDetailsService implements UserDetailsService {
         DAOUser newUser = new DAOUser();
         newUser.setUsername(user.getUsername());
         newUser.setPassword(bcryptEncoder.encode(user.getPassword()));
+        newUser.setEmail(user.getEmail());
+        newUser.setContact(user.getContact());
         return userDao.save(newUser);
     }
 }

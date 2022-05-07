@@ -1,4 +1,5 @@
 package org.example.service;
+import org.example.model.ChangePasswordRequest;
 import org.example.model.DAOUser;
 import org.springframework.http.ResponseEntity;
 
@@ -16,4 +17,5 @@ public interface UserService {
     ResponseEntity<DAOUser> UpdateUser(DAOUser daoUser);
 
     void deleteUser(Long id);
+
 }

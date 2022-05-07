@@ -1,11 +1,16 @@
 package org.example.controller;
 
+import org.example.config.JwtTokenUtil;
+import org.example.model.ChangePasswordRequest;
 import org.example.model.DAOUser;
+import org.example.repository.userDao;
+import org.example.response.ResetPasswordResponse;
+import org.example.response.ResponseCode;
 import org.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +23,15 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private userDao userDao;
+
+    @Autowired
+    private PasswordEncoder bcryptEncoder;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
     @RequestMapping("/getUsers")
     public List<DAOUser> getDetails()
@@ -43,6 +57,41 @@ public class UserController {
 
         return ResponseEntity.ok("logout success");
     }
+
+    @RequestMapping(value ="/changepassword",method = RequestMethod.POST)
+    public @ResponseBody ResetPasswordResponse resetPassword(@RequestBody ChangePasswordRequest changePasswordRequest, HttpServletRequest request) {
+
+        ResetPasswordResponse response = new ResetPasswordResponse();
+        //Getting Token From Headers
+        String token=request.getHeader("token");
+        //Extracting Logged User's name
+        String username=jwtTokenUtil.getUsernameFromToken(token);
+
+        //Retrieving All information of User based on Name
+        DAOUser CurrentUser=userDao.findByUsername(username);
+
+        if(bcryptEncoder.matches(changePasswordRequest.getNewpassword(),CurrentUser.getPassword())){
+            response.setStatus(ResponseCode.BAD_REQUEST);
+            response.setDescription("Old password and new password can't be same");
+        }
+
+        else if(bcryptEncoder.matches(changePasswordRequest.getCurrentpassword(),CurrentUser.getPassword()))
+        {
+            String encryptedPassword = bcryptEncoder.encode(changePasswordRequest.getNewpassword());
+            CurrentUser.setPassword(encryptedPassword);
+            userDao.saveAndFlush(CurrentUser);
+
+            response.setStatus(ResponseCode.OK);
+            response.setDescription("Password reset successfully");
+        }
+
+        else {
+            response.setStatus(ResponseCode.BAD_REQUEST);
+            response.setDescription("Old password didn't match");
+        }
+        return response;
+    }
+
     @RequestMapping(value = "/updateUser",method = RequestMethod.PUT)
     public ResponseEntity<DAOUser> UpdateUserInfo(@RequestBody DAOUser daoUser)
     {

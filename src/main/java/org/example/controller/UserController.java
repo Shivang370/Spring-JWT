@@ -3,9 +3,11 @@ package org.example.controller;
 import org.example.config.JwtTokenUtil;
 import org.example.model.ChangePasswordRequest;
 import org.example.model.DAOUser;
+import org.example.model.EmailRequest;
 import org.example.repository.userDao;
 import org.example.response.ResetPasswordResponse;
 import org.example.response.ResponseCode;
+import org.example.service.EmailService;
 import org.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @RestController
@@ -23,6 +26,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private userDao userDao;
@@ -104,4 +110,19 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @RequestMapping(value="/sendemail",method =RequestMethod.POST)
+    public ResponseEntity<?> ResetPassword(@RequestBody EmailRequest emailRequest, HttpSession session)
+    {
+        boolean success=emailService.sendEmail(emailRequest.getSubject(),emailRequest.getMessage(),emailRequest.getTo());
+        if(success)
+        {
+            session.setAttribute("message","Mail has been sent Successfully !!");
+            return ResponseEntity.ok("Mail has been sent Successfully !!");
+        }
+        else
+        {
+            session.setAttribute("message","Mail not sent !!...Contact Administrator");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Mail not sent !!...Contact Administrator");
+        }
+    }
 }

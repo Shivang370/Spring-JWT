@@ -2,7 +2,7 @@ package org.example.response;
 
 import java.io.Serializable;
 
-public class ResetPasswordResponse implements Serializable {
+public class ResponseWO implements Serializable {
 
     private ResponseCode status;
     private String description;
